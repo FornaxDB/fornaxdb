@@ -1,0 +1,33 @@
+type Event {
+  name: string!,
+  website: string,
+  cool: boolean,
+  participants: int?,
+  sponsors: string[]
+}
+
+type Person {
+  name: string
+  twitter: string,
+  skill_level: float,
+}
+
+type Team {
+  name: string!,
+  website: string,
+  country: string!,
+  no_of_members: int,
+  avg_elo: float!
+}
+
+relation member_of {
+  is_leader: boolean,
+  __src: Person,
+  __des: Team
+}
+
+relation is_participating {
+  
+  __src: Team,
+  __des: Event
+}
