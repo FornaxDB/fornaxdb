@@ -1,3 +1,3 @@
 # FornaxDB
 
-Graph Database with GraphQL
+# Graph Database with GraphQL
