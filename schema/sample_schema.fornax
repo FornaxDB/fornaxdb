@@ -27,7 +27,6 @@ relation member_of {
 }
 
 relation is_participating {
-  
   __src: Team,
   __des: Event
 }
