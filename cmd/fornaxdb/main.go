@@ -1,7 +1,20 @@
 package main
 
-import "fmt"
+import (
+	"github.com/FornaxDB/fornaxdb/logger"
+	"github.com/FornaxDB/fornaxdb/errors"
+)
+
 
 func main() {
-	fmt.Println("Hello FornaxDB")
+	l := logger.New()
+	l.Trace("Hello, World!", map[string]interface{}{"fo": "bar"})
+	err := x()
+	if err != nil {
+		l.Fatal(err.Error(), map[string]interface{}{})
+	}
+}
+
+func x() error {
+	return errors.SchemaAlreadyExists.New("bla")
 }
