@@ -76,7 +76,7 @@ func (t *Tokenizer) readIdentifier() string {
 	for util.IsLetter(t.ch) {
 		t.readChar()
 	}
-	return t.input[position:t.position]
+	return t.input[position -1 :t.position]
 }
 
 // readNumber reads a number from the input
@@ -205,6 +205,13 @@ func (t *Tokenizer) NextToken() *Token {
 	case 'r':
 		tok.Type = RELATION_TOKEN
 		tok.Literal = t.readIdentifier()
+	//case for EOF
+	case 0:
+		tok = Token{
+			Type:    EOF_TOKEN,
+			Literal: "",
+		}
+
 	default:
 		if util.IsLetter(ch) {
 			tok.Literal = t.readIdentifier()
@@ -221,5 +228,25 @@ func (t *Tokenizer) NextToken() *Token {
 			Literal: string(ch),
 		}
 	}
+
 	return &tok
+}
+
+// TokenLiteral returns the literal value of a token
+func (t *Token) TokenLiteral() string {
+	return t.Literal
+}
+
+// function to get list of tokens in a string
+func Tokenize(input string) []Token {
+	tokens := []Token{}
+	t := NewTokenizer(input)
+	for {
+		token := t.NextToken()
+		if t.readPosition >= len(t.input) {
+			break
+		}
+		tokens = append(tokens, *token)
+	}
+	return tokens
 }
