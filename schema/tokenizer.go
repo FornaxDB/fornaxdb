@@ -9,17 +9,19 @@ type TokenType string
 
 const (
 	//single character tokens
-	LEFT_BRACE_TOKEN  = "{"
-	RIGHT_BRACE_TOKEN = "}"
-	COMMA_TOKEN       = ","
-	COLON_TOKEN       = ":"
-	SEMICOLON_TOKEN   = ";"
+	LEFT_BRACE_TOKEN    = "{"
+	RIGHT_BRACE_TOKEN   = "}"
+	LEFT_BRACKET_TOKEN  = "["
+	RIGHT_BRACKET_TOKEN = "]"
+	LEFT_PAREN_TOKEN    = "("
+	RIGHT_PAREN_TOKEN   = ")"
+	COMMA_TOKEN         = ","
+	COLON_TOKEN         = ":"
+	SEMICOLON_TOKEN     = ";"
 	//keywords
 	TYPE_TOKEN     = "type"
 	RELATION_TOKEN = "relation"
-	// __src is a special keyword used to indicate the source of a token
 	__SRC_TOKEN = "__src"
-	// __des is a special keyword used to indicate the destination of a token
 	__DES_TOKEN = "__des"
 	//literal types
 	STRING_TOKEN = "string"
@@ -29,13 +31,10 @@ const (
 	//operators and delimiters
 	REQUIRED_TOKEN = "!"
 	OPTIONAL_TOKEN = "?"
-	LIST_TOKEN     = "[]"
-	UNION_TOKEN    = "|"
+	EQUALS_TOKEN   = "="
 	//other
 	IDENT_TOKEN   = "ident"
 	ILLEGAL_TOKEN = "illegal"
-	// whitespace
-	WHITESPACE_TOKEN = "whitespace"
 )
 
 // Token struct
@@ -46,23 +45,22 @@ type Token struct {
 
 // Tokenizer struct
 type Tokenizer struct {
-	input        string
-	position     int
-	ch           rune
+	input    string
+	position int
+	ch       rune
 }
-
 
 // NewTokenizer returns a new Tokenizer instance
 func NewTokenizer(input string) *Tokenizer {
 	return &Tokenizer{
-		input:        strings.TrimSpace(input),
-		position:     0,
+		input:    strings.TrimSpace(input),
+		position: 0,
 	}
 }
 
 //readChar reads the next character from the input
 func (t *Tokenizer) readChar() {
-	if t.position <= len(t.input ) {
+	if t.position <= len(t.input) {
 		c := rune(t.input[t.position])
 		t.ch = c
 	}
@@ -70,7 +68,7 @@ func (t *Tokenizer) readChar() {
 }
 
 //read multiple whitespace characters as one whitespace token
-func (t *Tokenizer) readWhitespace()  {
+func (t *Tokenizer) readWhitespace() {
 	for util.IsWhitespace(t.ch) {
 		t.readChar()
 	}
@@ -78,7 +76,7 @@ func (t *Tokenizer) readWhitespace()  {
 
 // readIdentifier reads an identifier from the input
 func (t *Tokenizer) readIdentifier() string {
-	position := t.position -1
+	position := t.position - 1
 	for util.IsPartofString(t.ch) {
 		t.readChar()
 	}
@@ -94,12 +92,6 @@ func (t *Tokenizer) readOperator() string {
 	return t.input[position:t.position]
 }
 
-// // skipWhitespace skips whitespace in the input
-// func (t *Tokenizer) skipWhitespace() {
-// 	for t.ch == ' ' || t.ch == '\t' || t.ch == '\n' || t.ch == '\r' {
-// 		t.readChar()
-// 	}
-// }
 
 // LookupIdent returns the token type for an identifier
 func LookupIdent(ident string) TokenType {
@@ -133,10 +125,6 @@ func LookupIdent(ident string) TokenType {
 // NextToken returns the next token in the input
 func (t *Tokenizer) NextToken() *Token {
 	var tok Token
-	
-
-	// skip whitespace
-	// t.Trim()
 
 	// get the next character
 	t.readChar()
@@ -153,9 +141,34 @@ func (t *Tokenizer) NextToken() *Token {
 			Type:    RIGHT_BRACE_TOKEN,
 			Literal: string(ch),
 		}
+	case '[':
+		tok = Token{
+			Type:    LEFT_BRACKET_TOKEN,
+			Literal: string(ch),
+		}
+	case ']':
+		tok = Token{
+			Type:    RIGHT_BRACKET_TOKEN,
+			Literal: string(ch),
+		}
+	case '(':
+		tok = Token{
+			Type:    LEFT_PAREN_TOKEN,
+			Literal: string(ch),
+		}
+	case ')':
+		tok = Token{
+			Type:    RIGHT_PAREN_TOKEN,
+			Literal: string(ch),
+		}
 	case ',':
 		tok = Token{
 			Type:    COMMA_TOKEN,
+			Literal: string(ch),
+		}
+	case '=':
+		tok = Token{
+			Type:    EQUALS_TOKEN,
 			Literal: string(ch),
 		}
 	case ':':
@@ -178,22 +191,7 @@ func (t *Tokenizer) NextToken() *Token {
 			Type:    OPTIONAL_TOKEN,
 			Literal: t.readOperator(),
 		}
-	case '[':
-		tok = Token{
-			Type:    LIST_TOKEN,
-			Literal: string(ch),
-		}
-	case ']':
-		tok = Token{
-			Type:    LIST_TOKEN,
-			Literal: string(ch),
-		}
-	case '|':
-		tok = Token{
-			Type:    UNION_TOKEN,
-			Literal: t.readOperator(),
-		}
-	//case for whitespace
+	//cases for whitespace
 	case ' ':
 		t.readWhitespace()
 	case '\t':
@@ -209,7 +207,7 @@ func (t *Tokenizer) NextToken() *Token {
 			tok.Type = LookupIdent(tok.Literal)
 			return &tok
 		}
-		
+
 		tok = Token{
 			Type:    ILLEGAL_TOKEN,
 			Literal: string(ch),
@@ -230,6 +228,5 @@ func Tokenize(input string) []Token {
 			break
 		}
 	}
-
 	return tokens
 }
