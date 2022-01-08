@@ -2,6 +2,7 @@ package schema
 
 import (
 	"github.com/FornaxDB/fornaxdb/schema/util"
+	"strings"
 )
 
 type TokenType string
@@ -31,9 +32,10 @@ const (
 	LIST_TOKEN     = "[]"
 	UNION_TOKEN    = "|"
 	//other
-	EOF_TOKEN     = "EOF"
 	IDENT_TOKEN   = "ident"
 	ILLEGAL_TOKEN = "illegal"
+	// whitespace
+	WHITESPACE_TOKEN = "whitespace"
 )
 
 // Token struct
@@ -46,43 +48,38 @@ type Token struct {
 type Tokenizer struct {
 	input        string
 	position     int
-	readPosition int
-	ch           byte
+	ch           rune
 }
+
 
 // NewTokenizer returns a new Tokenizer instance
 func NewTokenizer(input string) *Tokenizer {
 	return &Tokenizer{
-		input:        input,
+		input:        strings.TrimSpace(input),
 		position:     0,
-		readPosition: 0,
 	}
 }
 
 //readChar reads the next character from the input
 func (t *Tokenizer) readChar() {
-	if t.readPosition >= len(t.input) {
-		t.ch = 0
-	} else {
-		t.ch = t.input[t.readPosition]
+	if t.position <= len(t.input ) {
+		c := rune(t.input[t.position])
+		t.ch = c
 	}
-	t.position = t.readPosition
-	t.readPosition++
+	t.position++
+}
+
+//read multiple whitespace characters as one whitespace token
+func (t *Tokenizer) readWhitespace()  {
+	for util.IsWhitespace(t.ch) {
+		t.readChar()
+	}
 }
 
 // readIdentifier reads an identifier from the input
 func (t *Tokenizer) readIdentifier() string {
-	position := t.position
-	for util.IsLetter(t.ch) {
-		t.readChar()
-	}
-	return t.input[position -1 :t.position]
-}
-
-// readNumber reads a number from the input
-func (t *Tokenizer) readNumber() string {
-	position := t.position
-	for util.IsDigit(t.ch) {
+	position := t.position -1
+	for util.IsPartofString(t.ch) {
 		t.readChar()
 	}
 	return t.input[position:t.position]
@@ -97,12 +94,12 @@ func (t *Tokenizer) readOperator() string {
 	return t.input[position:t.position]
 }
 
-// skipWhitespace skips whitespace in the input
-func (t *Tokenizer) skipWhitespace() {
-	for t.ch == ' ' || t.ch == '\t' || t.ch == '\n' || t.ch == '\r' {
-		t.readChar()
-	}
-}
+// // skipWhitespace skips whitespace in the input
+// func (t *Tokenizer) skipWhitespace() {
+// 	for t.ch == ' ' || t.ch == '\t' || t.ch == '\n' || t.ch == '\r' {
+// 		t.readChar()
+// 	}
+// }
 
 // LookupIdent returns the token type for an identifier
 func LookupIdent(ident string) TokenType {
@@ -121,7 +118,7 @@ func LookupIdent(ident string) TokenType {
 	if ident == "float" {
 		return FLOAT_TOKEN
 	}
-	if ident == "bool" {
+	if ident == "boolean" {
 		return BOOL_TOKEN
 	}
 	if ident == "__src" {
@@ -136,13 +133,14 @@ func LookupIdent(ident string) TokenType {
 // NextToken returns the next token in the input
 func (t *Tokenizer) NextToken() *Token {
 	var tok Token
+	
 
 	// skip whitespace
-	t.skipWhitespace()
+	// t.Trim()
 
 	// get the next character
-	ch := t.ch
 	t.readChar()
+	ch := t.ch
 
 	switch ch {
 	case '{':
@@ -183,46 +181,35 @@ func (t *Tokenizer) NextToken() *Token {
 	case '[':
 		tok = Token{
 			Type:    LIST_TOKEN,
-			Literal: t.readOperator(),
+			Literal: string(ch),
+		}
+	case ']':
+		tok = Token{
+			Type:    LIST_TOKEN,
+			Literal: string(ch),
 		}
 	case '|':
 		tok = Token{
 			Type:    UNION_TOKEN,
 			Literal: t.readOperator(),
 		}
-	case 'i':
-		tok.Type = INT_TOKEN
-		tok.Literal = t.readIdentifier()
-	case 'f':
-		tok.Type = FLOAT_TOKEN
-		tok.Literal = t.readIdentifier()
-	case 'b':
-		tok.Type = BOOL_TOKEN
-		tok.Literal = t.readIdentifier()
-	case 't':
-		tok.Type = TYPE_TOKEN
-		tok.Literal = t.readIdentifier()
-	case 'r':
-		tok.Type = RELATION_TOKEN
-		tok.Literal = t.readIdentifier()
-	//case for EOF
-	case 0:
-		tok = Token{
-			Type:    EOF_TOKEN,
-			Literal: "",
-		}
+	//case for whitespace
+	case ' ':
+		t.readWhitespace()
+	case '\t':
+		t.readWhitespace()
+	case '\n':
+		t.readWhitespace()
+	case '\r':
+		t.readWhitespace()
 
 	default:
-		if util.IsLetter(ch) {
+		if util.IsPartofString(ch) {
 			tok.Literal = t.readIdentifier()
 			tok.Type = LookupIdent(tok.Literal)
 			return &tok
 		}
-		if util.IsDigit(ch) {
-			tok.Type = INT_TOKEN
-			tok.Literal = t.readNumber()
-			return &tok
-		}
+		
 		tok = Token{
 			Type:    ILLEGAL_TOKEN,
 			Literal: string(ch),
@@ -232,21 +219,17 @@ func (t *Tokenizer) NextToken() *Token {
 	return &tok
 }
 
-// TokenLiteral returns the literal value of a token
-func (t *Token) TokenLiteral() string {
-	return t.Literal
-}
-
 // function to get list of tokens in a string
 func Tokenize(input string) []Token {
 	tokens := []Token{}
 	t := NewTokenizer(input)
 	for {
 		token := t.NextToken()
-		if t.readPosition >= len(t.input) {
+		tokens = append(tokens, *token)
+		if t.position >= len(t.input) {
 			break
 		}
-		tokens = append(tokens, *token)
 	}
+
 	return tokens
 }
