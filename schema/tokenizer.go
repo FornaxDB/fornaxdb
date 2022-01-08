@@ -224,10 +224,12 @@ func Tokenize(input string) []Token {
 	t := NewTokenizer(input)
 	for {
 		token := t.NextToken()
+		if token.Type != "" && token.Literal != "" {
 		tokens = append(tokens, *token)
 		if t.position >= len(t.input) {
 			break
 		}
+	}
 	}
 	return tokens
 }
