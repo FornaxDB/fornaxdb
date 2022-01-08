@@ -1,34 +1,49 @@
 package schema
 
-
-type FieldType string
-const (
-	STRING_FIELD_TYPE = "string"
-	INT_FIELD_TYPE    = "int"
-	BOOL_FIELD_TYPE   = "bool"
-	FLOAT_FIELD_TYPE  = "float"
-
-)
-
-type Field struct {
-	Name string
-	Type FieldType
-	Operators string
+type Schema struct {
+	Types     []Type
+	Relations []Relation
 }
 
 type Type struct {
-	Name string
+	Name   string
 	Fields []Field
 }
 
 type Relation struct {
-	Name string
-	Fields []Field
-	Src Type
-	Des Type
+	Name        string
+	Fields      []Field
+	Source      *Type
+	Destination *Type
 }
 
-type Schema struct {
-	Types []Type
-	Relation []Relation
+type Field struct {
+	Key        string
+	Arguments  []Argument
+	ReturnType FieldReturnType
 }
+
+type Argument struct {
+	Key         string
+	RetunType    FieldReturnType
+	DefaultValue interface{}
+}
+
+type FieldReturnType interface {
+	isFieldReturnType()
+}
+
+type ScalarFieldReturnType struct {
+	Type     string
+	Nullable bool
+}
+
+func (ScalarFieldReturnType) isFieldReturnType() {}
+
+type VectorFieldReturnType struct {
+	Type              string
+	IsElementNullable bool
+	IsVectorNullable  bool
+}
+
+func (VectorFieldReturnType) isFieldReturnType() {}
