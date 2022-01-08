@@ -76,7 +76,7 @@ func (t *Tokenizer) readIdentifier() string {
 	for util.IsLetter(t.ch) {
 		t.readChar()
 	}
-	return t.input[position -1 :t.position]
+	return t.input[position-1 : t.position]
 }
 
 // readNumber reads a number from the input
