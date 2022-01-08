@@ -5,9 +5,14 @@ import (
 )
 
 var (
+	ParserErrors = errorx.NewNamespace("parser")
 	SchemaErrors = errorx.NewNamespace("schema")
 	QueryErrors  = errorx.NewNamespace("query")
 	StorageErrors = errorx.NewNamespace("storage")
+)
+
+var ( 
+	InvalidToken = ParserErrors.NewType("invalid_token")	
 )
 
 var (
@@ -19,5 +24,3 @@ var (
 	SchemaInvalidField = SchemaErrors.NewType("invalid_field")
 	SchemaInvalidOperator = SchemaErrors.NewType("invalid_operator")
 )
-
-

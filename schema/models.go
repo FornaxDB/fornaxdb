@@ -1,8 +1,8 @@
 package schema
 
 type Schema struct {
-	Types     []Type
-	Relations []Relation
+	Types     map[string]Type
+	Relations map[string]Relation
 }
 
 type Type struct {
@@ -47,3 +47,10 @@ type VectorFieldReturnType struct {
 }
 
 func (VectorFieldReturnType) isFieldReturnType() {}
+
+func NewSchema() Schema {
+	return Schema{
+		Types: make(map[string]Type),
+		Relations: make(map[string]Relation),
+	}
+}
