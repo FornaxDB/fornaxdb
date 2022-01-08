@@ -1,7 +1,6 @@
 package schema
 
 import (
-	"github.com/FornaxDB/fornaxdb/schema/util"
 	"strings"
 )
 
@@ -33,7 +32,7 @@ const (
 	OPTIONAL_TOKEN = "?"
 	EQUALS_TOKEN   = "="
 	//other
-	IDENT_TOKEN   = "ident"
+	IDENT_TOKEN   = "identifier"
 	ILLEGAL_TOKEN = "illegal"
 )
 
@@ -58,6 +57,16 @@ func NewTokenizer(input string) *Tokenizer {
 	}
 }
 
+// IsWhitespace returns true if the character is whitespace
+func IsWhitespace(ch rune) bool {
+	return ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r'
+}
+
+// Belongs to string
+func IsPartofString(ch rune) bool {
+	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_' || '0' <= ch && ch <= '9'
+}
+
 //readChar reads the next character from the input
 func (t *Tokenizer) readChar() {
 	if t.position <= len(t.input) {
@@ -69,29 +78,21 @@ func (t *Tokenizer) readChar() {
 
 //read multiple whitespace characters as one whitespace token
 func (t *Tokenizer) readWhitespace() {
-	for util.IsWhitespace(t.ch) {
+	for IsWhitespace(t.ch) {
 		t.readChar()
 	}
+	t.position--
 }
 
 // readIdentifier reads an identifier from the input
 func (t *Tokenizer) readIdentifier() string {
 	position := t.position - 1
-	for util.IsPartofString(t.ch) {
+	for IsPartofString(t.ch) {
 		t.readChar()
 	}
+	t.position--
 	return t.input[position:t.position]
 }
-
-// readOperator reads an operator from the input
-func (t *Tokenizer) readOperator() string {
-	position := t.position
-	for util.IsOperator(t.ch) {
-		t.readChar()
-	}
-	return t.input[position:t.position]
-}
-
 
 // LookupIdent returns the token type for an identifier
 func LookupIdent(ident string) TokenType {
@@ -184,12 +185,12 @@ func (t *Tokenizer) NextToken() *Token {
 	case '!':
 		tok = Token{
 			Type:    REQUIRED_TOKEN,
-			Literal: t.readOperator(),
+			Literal: string(ch),
 		}
 	case '?':
 		tok = Token{
 			Type:    OPTIONAL_TOKEN,
-			Literal: t.readOperator(),
+			Literal: string(ch),
 		}
 	//cases for whitespace
 	case ' ':
@@ -202,7 +203,7 @@ func (t *Tokenizer) NextToken() *Token {
 		t.readWhitespace()
 
 	default:
-		if util.IsPartofString(ch) {
+		if IsPartofString(ch) {
 			tok.Literal = t.readIdentifier()
 			tok.Type = LookupIdent(tok.Literal)
 			return &tok
