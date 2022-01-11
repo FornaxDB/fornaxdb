@@ -67,7 +67,7 @@ func IsPartofString(ch rune) bool {
 	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_' || '0' <= ch && ch <= '9'
 }
 
-//readChar reads the next character from the input
+// readChar reads the next character from the input
 func (t *Tokenizer) readChar() {
 	if t.position <= len(t.input) {
 		c := rune(t.input[t.position])
@@ -76,7 +76,7 @@ func (t *Tokenizer) readChar() {
 	t.position++
 }
 
-//read multiple whitespace characters as one whitespace token
+// read multiple whitespace characters as one whitespace token
 func (t *Tokenizer) readWhitespace() {
 	for IsWhitespace(t.ch) {
 		t.readChar()
