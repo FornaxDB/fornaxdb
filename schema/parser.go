@@ -6,54 +6,64 @@ import (
 
 type Parser struct {
 	schema *Schema
-	position int
-	tokens []Token
+	tokenizer *Tokenizer
+	currToken *Token
+	prevToken *Token
 }
 
 func NewParser() Parser {
-	s := NewSchema()
 	return Parser{
-		schema: &s,
-		position:  0,
-		tokens: nil,
+		schema: nil,
+		tokenizer: nil,
+		currToken: nil,
+		prevToken: nil,
 	}
 }
 
-func (p *Parser) parseType() (error) {
-	t := Type{}
-	
-	
-	
-	p.schema.Types[t.Name] = t
-	return nil
+func (p *Parser) next() {
+	p.prevToken = p.currToken
+	p.currToken = p.tokenizer.NextToken()
 }
 
-func (p *Parser) parseRelation() (error) {
-	r := Relation{}
+func (p *Parser) parseType() {
 
-	p.schema.Relations[r.Name] = r
-	return nil
 }
 
-func (p *Parser) ParseTokens(tokens []Token) (*Schema, error) {
-	// all functions modify that copy of the schema and return a pointer
-	p.tokens = tokens
-	for {
-		if p.position < len(tokens) {
-			token := p.tokens[p.position]
-			if token.Type == TYPE_TOKEN {
-				p.position++
-				p.parseType()
-			} else if token.Type == RELATION_TOKEN {
-				p.position++
-				p.parseRelation()
-			} else {
-				return nil, errors.InvalidToken.New("should start with type or relation")
-			}
-		} else {
-			break
+func (p *Parser) parseRelation() {
+
+}
+
+func (p *Parser) parseField() {}
+
+func (p *Parser) parseFieldKey() {}
+
+func (p *Parser) parseFieldKeyArguments() {}
+
+func (p *Parser) parseFieldReturnType() {}
+
+func (p *Parser) parseFieldScalarReturnType() {}
+
+func (p *Parser) parseFieldVectorReturnType() {}
+
+
+
+func (p *Parser) Parse(input string) (*Schema, error) {
+	s := NewSchema()
+	t := NewTokenizer(input)
+	p.schema = s
+	p.tokenizer = t
+
+	for p.currToken.Type != EOF_TOKEN {
+		p.next()
+		switch p.currToken.Type {
+		case TYPE_TOKEN:
+			p.parseType()
+		case RELATION_TOKEN:
+			p.parseRelation()
+		default:
+			return nil, errors.InvalidToken.New("Token should be type or relation")
 		}
 	}
-
+	
 	return p.schema, nil
 }

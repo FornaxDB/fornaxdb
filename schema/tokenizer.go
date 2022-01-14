@@ -8,20 +8,19 @@ type TokenType string
 
 const (
 	//single character tokens
-	LEFT_BRACE_TOKEN    = "{"
-	RIGHT_BRACE_TOKEN   = "}"
-	LEFT_BRACKET_TOKEN  = "["
-	RIGHT_BRACKET_TOKEN = "]"
-	LEFT_PAREN_TOKEN    = "("
-	RIGHT_PAREN_TOKEN   = ")"
+	OPEN_BRACE_TOKEN    = "{"
+	CLOSE_BRACE_TOKEN   = "}"
+	OPEN_BRACKET_TOKEN  = "["
+	CLOSE_BRACKET_TOKEN = "]"
+	OPEN_PAREN_TOKEN    = "("
+	CLOSE_PAREN_TOKEN   = ")"
 	COMMA_TOKEN         = ","
 	COLON_TOKEN         = ":"
-	SEMICOLON_TOKEN     = ";"
 	//keywords
 	TYPE_TOKEN     = "type"
 	RELATION_TOKEN = "relation"
-	__SRC_TOKEN = "__src"
-	__DES_TOKEN = "__des"
+	__SRC_TOKEN    = "__src"
+	__DES_TOKEN    = "__des"
 	//literal types
 	STRING_TOKEN = "string"
 	INT_TOKEN    = "int"
@@ -32,8 +31,9 @@ const (
 	OPTIONAL_TOKEN = "?"
 	EQUALS_TOKEN   = "="
 	//other
-	IDENT_TOKEN   = "identifier"
-	ILLEGAL_TOKEN = "illegal"
+	IDENTIFIER_TOKEN = "identifier"
+	ILLEGAL_TOKEN    = "illegal"
+	EOF_TOKEN        = "EOF"
 )
 
 // Token struct
@@ -120,7 +120,7 @@ func LookupIdent(ident string) TokenType {
 	if ident == "__des" {
 		return __DES_TOKEN
 	}
-	return IDENT_TOKEN
+	return IDENTIFIER_TOKEN
 }
 
 // NextToken returns the next token in the input
@@ -134,32 +134,32 @@ func (t *Tokenizer) NextToken() *Token {
 	switch ch {
 	case '{':
 		tok = Token{
-			Type:    LEFT_BRACE_TOKEN,
+			Type:    OPEN_BRACE_TOKEN,
 			Literal: string(ch),
 		}
 	case '}':
 		tok = Token{
-			Type:    RIGHT_BRACE_TOKEN,
+			Type:    CLOSE_BRACE_TOKEN,
 			Literal: string(ch),
 		}
 	case '[':
 		tok = Token{
-			Type:    LEFT_BRACKET_TOKEN,
+			Type:    OPEN_BRACKET_TOKEN,
 			Literal: string(ch),
 		}
 	case ']':
 		tok = Token{
-			Type:    RIGHT_BRACKET_TOKEN,
+			Type:    CLOSE_BRACKET_TOKEN,
 			Literal: string(ch),
 		}
 	case '(':
 		tok = Token{
-			Type:    LEFT_PAREN_TOKEN,
+			Type:    OPEN_PAREN_TOKEN,
 			Literal: string(ch),
 		}
 	case ')':
 		tok = Token{
-			Type:    RIGHT_PAREN_TOKEN,
+			Type:    CLOSE_PAREN_TOKEN,
 			Literal: string(ch),
 		}
 	case ',':
@@ -175,11 +175,6 @@ func (t *Tokenizer) NextToken() *Token {
 	case ':':
 		tok = Token{
 			Type:    COLON_TOKEN,
-			Literal: string(ch),
-		}
-	case ';':
-		tok = Token{
-			Type:    SEMICOLON_TOKEN,
 			Literal: string(ch),
 		}
 	case '!':
@@ -216,18 +211,4 @@ func (t *Tokenizer) NextToken() *Token {
 	}
 
 	return &tok
-}
-
-// function to get list of tokens in a string
-func Tokenize(input string) []Token {
-	tokens := []Token{}
-	t := NewTokenizer(input)
-	for {
-		token := t.NextToken()
-		tokens = append(tokens, *token)
-		if t.position >= len(t.input) {
-			break
-		}
-	}
-	return tokens
 }

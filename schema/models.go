@@ -48,8 +48,8 @@ type VectorFieldReturnType struct {
 
 func (VectorFieldReturnType) isFieldReturnType() {}
 
-func NewSchema() Schema {
-	return Schema{
+func NewSchema() *Schema {
+	return &Schema{
 		Types: make(map[string]Type),
 		Relations: make(map[string]Relation),
 	}
