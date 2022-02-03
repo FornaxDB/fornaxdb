@@ -9,12 +9,6 @@ import (
 
 
 func main() {
-	// l := logger.New()
-	// l.Trace("Hello, World!", map[string]interface{}{"foo": "bar"})
-	// err := x()
-	// if err != nil {
-	// 	l.Fatal(err.Error(), map[string]interface{}{})
-	// }
 	s := `type Event {
 		name: string!,
 		website: string,
@@ -47,8 +41,13 @@ func main() {
 		__src: Team,
 		__des: Event
 	  }`
-	  t := schema.Tokenize(s)
-	  fmt.Println(t)
+
+	  p := schema.NewParser()
+	  _, err := p.Parse(s)
+	  if err != nil {
+		  fmt.Println(err)
+	  }
+
 }
 
 // func x() error {
