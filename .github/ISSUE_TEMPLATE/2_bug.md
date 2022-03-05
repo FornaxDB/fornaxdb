@@ -1,4 +1,5 @@
-me: I have a problem with fornax.
+---
+name: I have a problem with fornax.
 about: You are using fornax but it is crashing
   or throws an exception, it is buggy, or something looks wrong.
 title: ''

@@ -1,4 +1,5 @@
-me: I am having difficulty installing Fornax or getting it to work
+---
+name: I am having difficulty installing Fornax or getting it to work
 about: You have run into problems while downloading or installing fornax, or the
   fornax cli is crashing.
 title: ''
