@@ -22,3 +22,13 @@ go.work
 
 # Build Binaries
 cmd/fornaxdb/fornaxdb
+
+*.iml
+*.ipr
+*.iws
+.idea/
+/build/
+/dist/
+/out/
+
+.vscode/
