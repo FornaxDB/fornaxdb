@@ -1,0 +1,5 @@
+nk_issues_enabled: true
+contact_links:
+          - name: I want help writing my application
+            url: https://github.com/FornaxDB/fornaxdb/discussions
+                    about: Ask your questions about how to achieve a particular effect in Flutter or get help with using a particular API.
