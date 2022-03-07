@@ -1,6 +1,6 @@
 package storage
 
 type Node struct {
-	FirstEdge *Edge
-	FirstProp *Prop
+	FirstEdge uint64
+	FirstProp uint64
 }
