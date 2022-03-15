@@ -1,6 +1,6 @@
 module github.com/FornaxDB/fornaxdb
 
-go 1.18
+go 1.17
 
 require (
 	github.com/joomcode/errorx v1.0.3 // indirect

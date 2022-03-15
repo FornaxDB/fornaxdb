@@ -2,19 +2,20 @@ package main
 
 import (
 	"github.com/FornaxDB/fornaxdb/logger"
-	"github.com/FornaxDB/fornaxdb/errors"
+	"github.com/FornaxDB/fornaxdb/storage"
 )
-
 
 func main() {
 	l := logger.New()
-	l.Trace("Hello, World!", map[string]interface{}{"fo": "bar"})
-	err := x()
+	config := storage.NewDefaultConfig()
+	err := storage.Init(config)
+	defer func() {
+		err := storage.Close()
+		if err != nil {
+			l.Error(err.Error(), nil)
+		}
+	}()
 	if err != nil {
-		l.Fatal(err.Error(), map[string]interface{}{})
+		l.Error(err.Error(), nil)
 	}
-}
-
-func x() error {
-	return errors.SchemaAlreadyExists.New("bla")
 }
