@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 )
 
+// Read jumps to the id position on the file and reads PropertyBlockSize bytes and marshals that into a Property struct.
 func (p *PropStore) Read(id ID) (*Property, error) {
 	// Jump to id position on the file, read a Property struct
 	data := make([]byte, PropertyBlockSize)

@@ -11,6 +11,8 @@ var LOGGER = logger.New()
 func (n *NodeStore) Init(file *os.File, position int64) {
 	n.File = file
 	n.Position = position
+
+	LOGGER.Info("Initialised NodeStore", nil)
 }
 
 // Close closes the file held by the NodeStore
@@ -20,5 +22,6 @@ func (n *NodeStore) Close() error {
 		return err
 	}
 
+	LOGGER.Info("Closed PropStore", nil)
 	return nil
 }

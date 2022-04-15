@@ -21,6 +21,6 @@ func (h *HeapStore) Close() error {
 		return err
 	}
 
-	LOGGER.Info("Closing HeapStore", nil)
+	LOGGER.Info("Closed HeapStore", nil)
 	return nil
 }

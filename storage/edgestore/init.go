@@ -21,6 +21,6 @@ func (n *EdgeStore) Close() error {
 		return err
 	}
 
-	LOGGER.Info("Closing EdgeStore", nil)
+	LOGGER.Info("Closed EdgeStore", nil)
 	return nil
 }
