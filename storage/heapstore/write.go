@@ -5,7 +5,8 @@ import (
 	"encoding/binary"
 )
 
-// Write at the end of the file
+// Write divides the input data into chunks of HeapBlockDataSize and creates n HeapBlock instances  and writes them as
+// a linked list on the disk. HeapBlocks with < HeapBlockDataSize bytes of data are padded with zeros
 func (h *HeapStore) Write(data []byte) (ID, error) {
 	var heapBlocks []HeapBlock
 
