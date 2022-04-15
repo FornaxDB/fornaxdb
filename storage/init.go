@@ -3,6 +3,10 @@ package storage
 import (
 	"github.com/FornaxDB/fornaxdb/errors"
 	"github.com/FornaxDB/fornaxdb/logger"
+	"github.com/FornaxDB/fornaxdb/storage/edgestore"
+	"github.com/FornaxDB/fornaxdb/storage/heapstore"
+	"github.com/FornaxDB/fornaxdb/storage/nodestore"
+	"github.com/FornaxDB/fornaxdb/storage/propstore"
 	"os"
 )
 
@@ -13,24 +17,12 @@ type Config struct {
 	// TODO: add other relevant config here
 }
 
-type StoreFile struct {
-	File     *os.File
-	Position uint64
-}
-
-// Files has the file pointers to all the binary files for the graph data
-type Files struct {
-	NodeStoreFile *StoreFile
-	EdgeStoreFile *StoreFile
-	PropStoreFile *StoreFile
-}
-
-type ID uint64
-
 const (
-	NodeStoreFileName = "fornax.nodestore.db"
-	EdgeStoreFileName = "fornax.edgestore.db"
-	PropStoreFileName = "fornax.propstore.db"
+	NodeStoreFileName   = "fornax.nodestore.db"
+	EdgeStoreFileName   = "fornax.edgestore.db"
+	PropStoreFileName   = "fornax.propstore.db"
+	StringStoreFileName = "fornax.stringstore.db"
+	ArrayStoreFileName  = "fornax.arraystore.db"
 )
 
 func NewDefaultConfig() *Config {
@@ -40,8 +32,12 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-var StateFiles Files
 var Log logger.Logger
+var NodeStore nodestore.NodeStore
+var EdgeStore edgestore.EdgeStore
+var PropStore propstore.PropStore
+var StringStore heapstore.HeapStore
+var ArrayStore heapstore.HeapStore
 
 func Init(config *Config) error {
 	Log = logger.New()
@@ -58,47 +54,67 @@ func Init(config *Config) error {
 		var nodeStoreBinFile *os.File
 		nodeStoreBinFile, err = os.OpenFile(
 			config.Directory+"/"+NodeStoreFileName,
-			os.O_APPEND|os.O_CREATE|os.O_WRONLY,
+			os.O_APPEND|os.O_CREATE|os.O_RDWR,
 			0644,
 		)
 		if err != nil {
 			return errors.StorageCannotOpenFile.New(err.Error())
 		}
 
-		StateFiles.NodeStoreFile = &StoreFile{
-			File:     nodeStoreBinFile,
-			Position: 0, // TODO: correct the positions here, these won't be 0 if a file already exists
-		}
+		// TODO: correct the positions here, these won't be 0 if a file already exists
+		NodeStore.Init(nodeStoreBinFile, 0)
 
 		var edgeStoreBinFile *os.File
 		edgeStoreBinFile, err = os.OpenFile(
-			config.Directory+"/"+NodeStoreFileName,
-			os.O_APPEND|os.O_CREATE|os.O_WRONLY,
+			config.Directory+"/"+EdgeStoreFileName,
+			os.O_APPEND|os.O_CREATE|os.O_RDWR,
 			0644,
 		)
 		if err != nil {
 			return errors.StorageCannotOpenFile.New(err.Error())
 		}
 
-		StateFiles.EdgeStoreFile = &StoreFile{
-			File:     edgeStoreBinFile,
-			Position: 0,
-		}
+		// TODO: correct the positions here, these won't be 0 if a file already exists
+		EdgeStore.Init(edgeStoreBinFile, 0)
 
 		var propStoreBinFile *os.File
 		propStoreBinFile, err = os.OpenFile(
-			config.Directory+"/"+NodeStoreFileName,
-			os.O_APPEND|os.O_CREATE|os.O_WRONLY,
+			config.Directory+"/"+PropStoreFileName,
+			os.O_APPEND|os.O_CREATE|os.O_RDWR,
 			0644,
 		)
 		if err != nil {
 			return errors.StorageCannotOpenFile.New(err.Error())
 		}
 
-		StateFiles.PropStoreFile = &StoreFile{
-			File:     propStoreBinFile,
-			Position: 0,
+		// TODO: correct the positions here, these won't be 0 if a file already exists
+		PropStore.Init(propStoreBinFile, 0)
+
+		var stringStoreBinFile *os.File
+		stringStoreBinFile, err = os.OpenFile(
+			config.Directory+"/"+StringStoreFileName,
+			os.O_APPEND|os.O_CREATE|os.O_RDWR,
+			0644,
+		)
+		if err != nil {
+			return errors.StorageCannotOpenFile.New(err.Error())
 		}
+
+		// TODO: correct the positions here, these won't be 0 if a file already exists
+		StringStore.Init(stringStoreBinFile, 0)
+
+		var arrayStoreBinFile *os.File
+		arrayStoreBinFile, err = os.OpenFile(
+			config.Directory+"/"+ArrayStoreFileName,
+			os.O_APPEND|os.O_CREATE|os.O_RDWR,
+			0644,
+		)
+		if err != nil {
+			return errors.StorageCannotOpenFile.New(err.Error())
+		}
+
+		// TODO: correct the positions here, these won't be 0 if a file already exists
+		ArrayStore.Init(arrayStoreBinFile, 0)
 	} else {
 		var nodeStoreBinFile *os.File
 		nodeStoreBinFile, err = os.Create(
@@ -108,36 +124,47 @@ func Init(config *Config) error {
 			return errors.StorageCannotOpenFile.New(err.Error())
 		}
 
-		StateFiles.NodeStoreFile = &StoreFile{
-			File:     nodeStoreBinFile,
-			Position: 0,
-		}
+		NodeStore.Init(nodeStoreBinFile, 0)
 
 		var edgeStoreBinFile *os.File
 		edgeStoreBinFile, err = os.Create(
-			config.Directory + "/" + NodeStoreFileName,
+			config.Directory + "/" + EdgeStoreFileName,
 		)
 		if err != nil {
 			return errors.StorageCannotOpenFile.New(err.Error())
 		}
 
-		StateFiles.EdgeStoreFile = &StoreFile{
-			File:     edgeStoreBinFile,
-			Position: 0,
-		}
+		EdgeStore.Init(edgeStoreBinFile, 0)
 
 		var propStoreBinFile *os.File
 		propStoreBinFile, err = os.Create(
-			config.Directory + "/" + NodeStoreFileName,
+			config.Directory + "/" + PropStoreFileName,
 		)
 		if err != nil {
 			return errors.StorageCannotOpenFile.New(err.Error())
 		}
 
-		StateFiles.PropStoreFile = &StoreFile{
-			File:     propStoreBinFile,
-			Position: 0,
+		PropStore.Init(propStoreBinFile, 0)
+
+		var stringStoreBinFile *os.File
+		stringStoreBinFile, err = os.Create(
+			config.Directory + "/" + StringStoreFileName,
+		)
+		if err != nil {
+			return errors.StorageCannotOpenFile.New(err.Error())
 		}
+
+		StringStore.Init(stringStoreBinFile, 0)
+
+		var arrayStoreBinFile *os.File
+		arrayStoreBinFile, err = os.Create(
+			config.Directory + "/" + ArrayStoreFileName,
+		)
+		if err != nil {
+			return errors.StorageCannotOpenFile.New(err.Error())
+		}
+
+		ArrayStore.Init(arrayStoreBinFile, 0)
 	}
 
 	Log.Info("FornaxDB Storage Initialised Successfully", nil)
@@ -147,17 +174,17 @@ func Init(config *Config) error {
 func Close() error {
 	var err error
 
-	err = StateFiles.NodeStoreFile.File.Close()
+	err = NodeStore.Close()
 	if err != nil {
 		return errors.StorageCannotCloseFile.New(err.Error())
 	}
 
-	err = StateFiles.EdgeStoreFile.File.Close()
+	err = EdgeStore.Close()
 	if err != nil {
 		return errors.StorageCannotCloseFile.New(err.Error())
 	}
 
-	err = StateFiles.PropStoreFile.File.Close()
+	err = PropStore.Close()
 	if err != nil {
 		return errors.StorageCannotCloseFile.New(err.Error())
 	}
