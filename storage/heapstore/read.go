@@ -5,6 +5,8 @@ import (
 	"encoding/binary"
 )
 
+// Read starts reading blocks from id does so till it reaches the end of the linked list (id == -1).
+// All the data in the blocks is appended and returned as a []byte.
 func (h *HeapStore) Read(id ID) ([]byte, error) {
 	var result []byte
 	currentId := id

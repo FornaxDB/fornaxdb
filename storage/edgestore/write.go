@@ -3,27 +3,27 @@ package edgestore
 import (
 	"bytes"
 	"encoding/binary"
-	"fmt"
 )
 
-func (n *EdgeStore) Write(edge Edge) error {
+// Write writes the passed edge to the disk and returns the position of the written record.
+func (n *EdgeStore) Write(edge Edge) (ID, error) {
 	var buffer bytes.Buffer
 	err := binary.Write(&buffer, binary.BigEndian, &edge)
 	if err != nil {
-		return err
+		return -1, err
 	}
 
-	var length int
-	length, err = n.File.Write(buffer.Bytes())
+	var writeSize int
+	writeSize, err = n.File.Write(buffer.Bytes())
 	if err != nil {
-		return err
+		return -1, err
 	}
 
-	LOGGER.Info(fmt.Sprintf("Wrote %v Bytes", length), nil)
-	return nil
+	n.Position += int64(writeSize)
+	return ID(n.Position - EdgeBlockSize), nil
 }
 
-// Update will update data of a given ID
+// Update will overwrite the edge present at position id on the disk.
 func (n *EdgeStore) Update(id ID, newEdge Edge) error {
 	var buffer bytes.Buffer
 	err := binary.Write(&buffer, binary.BigEndian, &newEdge)

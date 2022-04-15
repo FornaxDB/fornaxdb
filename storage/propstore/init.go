@@ -10,6 +10,7 @@ var LOGGER = logger.New()
 func (p *PropStore) Init(file *os.File, position int64) {
 	p.File = file
 	p.Position = position
+	LOGGER.Info("Initialised PropStore", nil)
 }
 
 func (p *PropStore) Close() error {
@@ -18,5 +19,6 @@ func (p *PropStore) Close() error {
 		return err
 	}
 
+	LOGGER.Info("Closed PropStore", nil)
 	return nil
 }

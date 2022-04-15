@@ -3,28 +3,27 @@ package nodestore
 import (
 	"bytes"
 	"encoding/binary"
-	"fmt"
 )
 
-// Write at the end of the file
-func (n *NodeStore) Write(node Node) error {
+// Write writes a new node at the end of the file
+func (n *NodeStore) Write(node Node) (ID, error) {
 	var buffer bytes.Buffer
 	err := binary.Write(&buffer, binary.BigEndian, &node)
 	if err != nil {
-		return err
+		return -1, err
 	}
 
-	var length int
-	length, err = n.File.Write(buffer.Bytes())
+	var writeSize int
+	writeSize, err = n.File.Write(buffer.Bytes())
 	if err != nil {
-		return err
+		return -1, err
 	}
 
-	LOGGER.Info(fmt.Sprintf("Wrote %v Bytes", length), nil)
-	return nil
+	n.Position += int64(writeSize)
+	return ID(n.Position - NodeBlockSize), nil
 }
 
-// Update will update data of a given ID
+// Update will update the node on present on position id
 func (n *NodeStore) Update(id ID, newNode Node) error {
 	var buffer bytes.Buffer
 	err := binary.Write(&buffer, binary.BigEndian, &newNode)

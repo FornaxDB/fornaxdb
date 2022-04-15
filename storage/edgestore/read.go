@@ -5,20 +5,20 @@ import (
 	"encoding/binary"
 )
 
+// Read reads EdgeBlockSize bytes from the id position and marshals into the Edge struct
 func (n *EdgeStore) Read(id ID) (*Edge, error) {
-	// Jump to id position on the file, read an Edge struct
-	data := make([]byte, EdgeStrutSize)
+	data := make([]byte, EdgeBlockSize)
 	_, err := n.File.ReadAt(data, int64(id))
 	if err != nil {
 		return nil, err
 	}
 
-	node := Edge{}
+	edge := Edge{}
 	buffer := bytes.NewBuffer(data)
-	err = binary.Read(buffer, binary.BigEndian, &node)
+	err = binary.Read(buffer, binary.BigEndian, &edge)
 	if err != nil {
 		return nil, err
 	}
 
-	return &node, nil
+	return &edge, nil
 }

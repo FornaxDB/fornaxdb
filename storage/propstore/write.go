@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 )
 
+// Write writes a new property block to the binary file.
 func (p *PropStore) Write(property Property) (ID, error) {
 	var buffer bytes.Buffer
 	err := binary.Write(&buffer, binary.BigEndian, &property)
@@ -23,6 +24,7 @@ func (p *PropStore) Write(property Property) (ID, error) {
 	return ID(p.Position) - PropertyBlockSize, nil
 }
 
+// Update overwrites the property block at position id with newNode
 func (p *PropStore) Update(id ID, newProperty Property) error {
 	var buffer bytes.Buffer
 	err := binary.Write(&buffer, binary.BigEndian, &newProperty)
